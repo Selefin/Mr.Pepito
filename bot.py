@@ -1,4 +1,4 @@
-# bot.py
+# Mr.Pepito - A discord bot
 import os
 import discord
 import time
