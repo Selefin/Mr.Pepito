@@ -6,8 +6,8 @@ This documentation provides an overview of Mr.Pepito, a Discord bot built in Pyt
 ## Setup
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/makesse24/your_bot.git
-   cd your_bot
+   git clone https://github.com/makesse24/Mr.Pepito.git
+   cd Mr.Pepito
    ```
 
 2. **Install dependencies:**
