@@ -9,6 +9,10 @@ import json
 default_intents = discord.Intents.all()
 bot = discord.Bot(intends=default_intents)
 
+TOKEN = os.getenv("TOKEN")
+OWNER = os.getenv("OWNER")
+
+
 ## Events
 @bot.event
 async def on_ready():
@@ -65,7 +69,7 @@ async def ping(ctx):
 
 @bot.slash_command(name = "disconnect", description = "Disconnect the bot from discord")
 async def disconnect(ctx):
-    if ctx.author.id != int(os.getenv("OWNER")):
+    if ctx.author.id != int(OWNER):
         await ctx.respond("You do not have permission to use this command")
         return
     await ctx.respond("Disconnecting...")
@@ -310,4 +314,4 @@ async def clear(ctx, amount: int = None):
     else:
         await ctx.respond("You do not have permission to use this command")
 
-bot.run(os.getenv("TOKEN"))
+bot.run(TOKEN)
