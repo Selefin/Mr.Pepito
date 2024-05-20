@@ -4,7 +4,6 @@ import discord
 import time
 import random
 import datetime
-import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,35 +28,13 @@ async def on_ready():
             except Exception as e:
                 print(f"Failed to sync commands: {e}")
 
+
 @bot.event
 async def on_connect():
     print("Bot connected to discord")
 
-@bot.listen("on_member_join")
-async def on_member_join(member):
-    #if the member is registered in the roles file, give them their roles
-    try:
-        with open(f"./roles/roles_{member.guild.id}.json", "r") as f:
-            roles = json.load(f)
-            if str(member.id) in roles:
-                for role in roles[str(member.id)]:
-                    await member.add_roles(member.guild.get_role(role))
-    except Exception as e:
-        print(f"Failed to give roles to member: {e}")
 
-@bot.listen("on_member_remove")
-async def on_member_remove(member):
-    #saves the roles of the member to a file
-    try:
-        with open(f"./roles/roles_{member.guild.id}.json", "r") as f:
-            roles = json.load(f)
-            roles[str(member.id)] = [role.id for role in member.roles]
-        with open(f"./roles/roles_{member.guild.id}.json", "w") as f:
-            json.dump(roles, f)
-    except Exception as e:
-        print(f"Failed to save roles of member: {e}")
-
-## Commands   
+## Commands
 @bot.slash_command(name="commands", description="List all available commands")
 async def commands(ctx):
     c_embed = discord.Embed(title="**Commands**", description="Here are all the commands available:", color=0xff00ff)
@@ -66,11 +43,13 @@ async def commands(ctx):
         c_embed.add_field(name=f"/{command.name}", value=command.description, inline=False)
     await ctx.respond(embed=c_embed)
 
-@bot.slash_command(name = "ping", description = "Check the bot's latency")
+
+@bot.slash_command(name="ping", description="Check the bot's latency")
 async def ping(ctx):
     await ctx.respond(f"{int(bot.latency * 1000)}ms")
 
-@bot.slash_command(name = "disconnect", description = "Disconnect the bot from discord")
+
+@bot.slash_command(name="disconnect", description="Disconnect the bot from discord")
 async def disconnect(ctx):
     if ctx.author.id != int(OWNER):
         await ctx.respond("You do not have permission to use this command")
@@ -78,6 +57,7 @@ async def disconnect(ctx):
     await ctx.respond("Disconnecting...")
     print("Disconnecting...")
     await bot.close()
+
 
 @bot.slash_command(name="roulette", description="Play a game of russian roulette")
 async def roulette(ctx):
@@ -88,7 +68,7 @@ async def roulette(ctx):
     time.sleep(2.1)
     if random.randint(1, 6) == 6:
         r_embed.description = "**BANG!** \nYou're dead!"
-        r_embed.color = 0xff0000
+        r_embed.colour = 0xff0000
         r_embed.remove_image()
         r_embed.set_footer(text="Better luck next time!")
         await r_msg.edit(embed=r_embed)
@@ -97,18 +77,23 @@ async def roulette(ctx):
             await ctx.author.timeout_for(duration=r_duration, reason="You died in russian roulette")
         except Exception as e:
             print(f"Failed to timeout user: {e}")
-            if("Missing Permissions" in str(e)):
+            if "Missing Permissions" in str(e):
                 await r_msg.respond("*I don't have permission to timeout this user!*")
     else:
         r_embed.description = "**CLICK!** \nYou survived!"
-        r_embed.color = 0x00ff00
+        r_embed.colour = 0x00ff00
         r_embed.remove_image()
         r_embed.remove_footer()
         await r_msg.edit(embed=r_embed)
 
+
 @bot.slash_command(name="blackjack", description="Play a hand of blackjack")
 async def blackjack(ctx):
-    deck = {"A♠️" : 11, "2♠️" : 2, "3♠️" : 3, "4♠️" : 4, "5♠️" : 5, "6♠️" : 6, "7♠️" : 7, "8♠️" : 8, "9♠️" : 9, "10♠️" : 10, "J♠️" : 10, "Q♠️" : 10, "K♠️" : 10, "A♣" : 11, "2♣" : 2, "3♣" : 3, "4♣" : 4, "5♣" : 5, "6♣" : 6, "7♣" : 7, "8♣" : 8, "9♣" : 9, "10♣" : 10, "J♣" : 10, "Q♣" : 10, "K♣" : 10, "A♥" : 11, "2♥" : 2, "3♥" : 3, "4♥" : 4, "5♥" : 5, "6♥" : 6, "7♥" : 7, "8♥" : 8, "9♥" : 9, "10♥" : 10, "J♥" : 10, "Q♥" : 10, "K♥" : 10, "A♦" : 11, "2♦" : 2, "3♦" : 3, "4♦" : 4, "5♦" : 5, "6♦" : 6, "7♦" : 7, "8♦" : 8, "9♦" : 9, "10♦" : 10, "J♦" : 10, "Q♦" : 10, "K♦" : 10}
+    deck = {"A♠️": 11, "2♠️": 2, "3♠️": 3, "4♠️": 4, "5♠️": 5, "6♠️": 6, "7♠️": 7, "8♠️": 8, "9♠️": 9, "10♠️": 10,
+            "J♠️": 10, "Q♠️": 10, "K♠️": 10, "A♣": 11, "2♣": 2, "3♣": 3, "4♣": 4, "5♣": 5, "6♣": 6, "7♣": 7, "8♣": 8,
+            "9♣": 9, "10♣": 10, "J♣": 10, "Q♣": 10, "K♣": 10, "A♥": 11, "2♥": 2, "3♥": 3, "4♥": 4, "5♥": 5, "6♥": 6,
+            "7♥": 7, "8♥": 8, "9♥": 9, "10♥": 10, "J♥": 10, "Q♥": 10, "K♥": 10, "A♦": 11, "2♦": 2, "3♦": 3, "4♦": 4,
+            "5♦": 5, "6♦": 6, "7♦": 7, "8♦": 8, "9♦": 9, "10♦": 10, "J♦": 10, "Q♦": 10, "K♦": 10}
     player_hand = []
     dealer_hand = []
     player_score = 0
@@ -125,7 +110,7 @@ async def blackjack(ctx):
         del deck[card]
     b_embed = discord.Embed(title="Blackjack", description="You have been dealt two cards", color=0x0000ff)
     b_embed.add_field(name="Your hand", value=f"{player_hand[0]} and {player_hand[1]}", inline=False)
-    b_embed.add_field(name="Your score", value=player_score, inline=False)
+    b_embed.add_field(name="Your score", value=str(player_score), inline=False)
     b_embed.add_field(name="Dealer's hand", value=f"{dealer_hand[0]}", inline=False)
     b_embed.add_field(name="Dealer's score", value="?", inline=False)
     b_embed.set_footer(text="Type /hit or /stand")
@@ -135,13 +120,14 @@ async def blackjack(ctx):
     b_view.add_item(b_button_hit)
     b_view.add_item(b_button_stand)
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
+
     async def hit(interaction: discord.Interaction):
         nonlocal player_score
         nonlocal player_hand
-        card = random.choice(list(deck.keys()))
-        player_hand.append(card)
-        player_score += deck[card]
-        del deck[card]
+        cards = random.choice(list(deck.keys()))
+        player_hand.append(cards)
+        player_score += deck[cards]
+        del deck[cards]
         b_embed.set_field_at(0, name="Your hand", value=f"{', '.join(player_hand)}", inline=False)
         b_embed.set_field_at(1, name="Your score", value=player_score, inline=False)
         await b_msg.edit(embed=b_embed, view=b_view)
@@ -149,11 +135,12 @@ async def blackjack(ctx):
             b_embed.description = "You have gone bust!"
             b_embed.set_field_at(2, name="Dealer's hand", value=f"{', '.join(dealer_hand)}", inline=False)
             b_embed.set_field_at(3, name="Dealer's score", value=dealer_score, inline=False)
-            b_embed.color = 0xff0000
+            b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             return
         b_button_hit.callback = hit
+
     async def stand(interaction: discord.Interaction):
         nonlocal dealer_score
         nonlocal dealer_hand
@@ -167,36 +154,40 @@ async def blackjack(ctx):
         await b_msg.edit(embed=b_embed)
         if dealer_score > 21:
             b_embed.description = "The dealer has gone bust!"
-            b_embed.color = 0x00ff00
+            b_embed.colour = 0x00ff00
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             return
         if dealer_score > player_score:
             b_embed.description = "The dealer wins!"
-            b_embed.color = 0xff0000
+            b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             return
         if dealer_score < player_score:
             b_embed.description = "You win!"
-            b_embed.color = 0x00ff00
+            b_embed.colour = 0x00ff00
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             return
         if dealer_score == player_score:
             b_embed.description = "It's a draw!"
-            b_embed.color = 0xffff00
+            b_embed.colour = 0xffff00
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             return
+
     b_button_hit.callback = hit
     b_button_stand.callback = stand
-    
+
+
 @bot.slash_command(name="bomb", description="Plant a bot for a user to defuse")
 async def bombe(ctx, user: discord.Member = None):
-    if user == None:
+    if user is None:
         user = ctx.author
-    b_embed = discord.Embed(title="A bomb has been planted", description=f"A bomb is planted on {user.mention}. You have 5 minutes to defuse the bomb!\nIf you chose the wrong cable you may explode.", color=0x0000ff)
+    b_embed = discord.Embed(title="A bomb has been planted",
+                            description=f"A bomb is planted on {user.mention}. You have 5 minutes to defuse the bomb!\nIf you chose the wrong cable you may explode.",
+                            color=0x0000ff)
     b_embed.set_footer(text="click the button to defuse the bomb")
     b_view = discord.ui.View()
     b_button_red = discord.ui.Button(label="red", style=discord.ButtonStyle.danger)
@@ -207,99 +198,106 @@ async def bombe(ctx, user: discord.Member = None):
     b_view.add_item(b_button_green)
     b_view.timeout = 300
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
-    invite =  await ctx.channel.create_invite()
+    invite = await ctx.channel.create_invite()
 
     async def explode_by_timeout():
         b_embed.description = "Times up! The bomb has exploded!"
-        b_embed.color = 0xff0000
+        b_embed.colour = 0xff0000
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         try:
             await user.create_dm()
-            await user.dm_channel.send(f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
+            await user.dm_channel.send(
+                f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
             await user.kick(reason="The bomb exploded")
         except Exception as e:
             print(f"Failed to kick user: {e}")
-            if("Missing Permissions" in str(e)):
+            if "Missing Permissions" in str(e):
                 await b_msg.respond("*I don't have permission to kick this user!*")
         return
-    
+
     b_view.on_timeout = explode_by_timeout
 
     wrong_cable = random.choice(["red", "blue", "green"])
+
     async def defuse_red(interaction: discord.Interaction):
         if wrong_cable == "red":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
-            b_embed.color = 0xff0000
+            b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             try:
                 await user.create_dm()
-                await user.dm_channel.send(f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
+                await user.dm_channel.send(
+                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
                 await user.kick(reason="The bomb exploded")
             except Exception as e:
                 print(f"Failed to kick user: {e}")
-                if("Missing Permissions" in str(e)):
+                if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.color = 0x00ff00
+        b_embed.colour = 0x00ff00
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         return
-    
+
     async def defuse_blue(interaction: discord.Interaction):
         if wrong_cable == "blue":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
-            b_embed.color = 0xff0000
+            b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             try:
                 await user.create_dm()
-                await user.dm_channel.send(f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
+                await user.dm_channel.send(
+                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
                 await user.kick(reason="The bomb exploded")
             except Exception as e:
                 print(f"Failed to kick user: {e}")
-                if("Missing Permissions" in str(e)):
+                if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.color = 0x00ff00
+        b_embed.colour = 0x00ff00
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         return
-    
+
     async def defuse_green(interaction: discord.Interaction):
         if wrong_cable == "green":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
-            b_embed.color = 0xff0000
+            b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
             try:
                 await user.create_dm()
-                await user.dm_channel.send(f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
+                await user.dm_channel.send(
+                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
                 await user.kick(reason="The bomb exploded")
             except Exception as e:
                 print(f"Failed to kick user: {e}")
-                if("Missing Permissions" in str(e)):
+                if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.color = 0x00ff00
+        b_embed.colour = 0x00ff00
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         return
-    
+
     b_button_red.callback = defuse_red
     b_button_blue.callback = defuse_blue
     b_button_green.callback = defuse_green
 
+
 @bot.slash_command(name="clear", description="Clear a specified number of messages")
 async def clear(ctx, amount: int = None):
     if ctx.author.guild_permissions.manage_messages:
-        if amount == None:
+        if amount is None:
             try:
-                print(f"Clearing all messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
+                print(
+                    f"Clearing all messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
                 msg = await ctx.respond("Clearing all messages...", ephemeral=True)
                 await ctx.channel.purge()
                 await msg.edit(content="Cleared all messages", ephemeral=True)
@@ -309,12 +307,14 @@ async def clear(ctx, amount: int = None):
                 print(f"Failed to clear messages: {e}")
                 await ctx.respond("Failed to clear messages", ephemeral=True)
         else:
-            print(f"Clearing {amount} messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
+            print(
+                f"Clearing {amount} messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
             msg = await ctx.respond(f"Clearing {amount} messages...", ephemeral=True)
             await ctx.channel.purge(limit=amount)
             await msg.respond(f"Cleared {amount} messages", ephemeral=True)
             print(f"Cleared {amount} messages")
     else:
         await ctx.respond("You do not have permission to use this command")
+
 
 bot.run(TOKEN)
