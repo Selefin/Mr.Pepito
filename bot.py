@@ -5,12 +5,15 @@ import time
 import random
 import datetime
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 default_intents = discord.Intents.all()
 bot = discord.Bot(intends=default_intents)
 
-TOKEN = os.getenv("TOKEN")
-OWNER = os.getenv("OWNER")
+TOKEN = os.getenv('TOKEN')
+OWNER = os.getenv('OWNER')
 
 
 ## Events
