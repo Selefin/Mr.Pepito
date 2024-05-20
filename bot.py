@@ -89,11 +89,10 @@ async def roulette(ctx):
 
 @bot.slash_command(name="blackjack", description="Play a hand of blackjack")
 async def blackjack(ctx):
-    deck = {"A♠️": 11, "2♠️": 2, "3♠️": 3, "4♠️": 4, "5♠️": 5, "6♠️": 6, "7♠️": 7, "8♠️": 8, "9♠️": 9, "10♠️": 10,
-            "J♠️": 10, "Q♠️": 10, "K♠️": 10, "A♣": 11, "2♣": 2, "3♣": 3, "4♣": 4, "5♣": 5, "6♣": 6, "7♣": 7, "8♣": 8,
-            "9♣": 9, "10♣": 10, "J♣": 10, "Q♣": 10, "K♣": 10, "A♥": 11, "2♥": 2, "3♥": 3, "4♥": 4, "5♥": 5, "6♥": 6,
-            "7♥": 7, "8♥": 8, "9♥": 9, "10♥": 10, "J♥": 10, "Q♥": 10, "K♥": 10, "A♦": 11, "2♦": 2, "3♦": 3, "4♦": 4,
-            "5♦": 5, "6♦": 6, "7♦": 7, "8♦": 8, "9♦": 9, "10♦": 10, "J♦": 10, "Q♦": 10, "K♦": 10}
+    deck = {"A♠️": 11, "2♠️": 2, "3♠️": 3, "4♠️": 4, "5♠️": 5, "6♠️": 6, "7♠️": 7, "8♠️": 8, "9♠️": 9, "10♠️": 10, "J♠️": 10, "Q♠️": 10, "K♠️": 10,
+            "A♣️": 11, "2♣️": 2, "3♣️": 3, "4♣️": 4, "5♣️": 5, "6♣️": 6, "7♣️": 7, "8♣️": 8, "9♣️": 9, "10♣️": 10, "J♣️": 10, "Q♣️": 10, "K♣️": 10,
+            "A♥️": 11, "2♥️": 2, "3♥️": 3, "4♥️": 4, "5♥️": 5, "6♥️": 6, "7♥️": 7, "8♥️": 8, "9♥️": 9, "10♥️": 10, "J♥️": 10, "Q♥️": 10, "K♥️": 10,
+            "A♦️": 11, "2♦️": 2, "3♦️": 3, "4♦️": 4, "5♦️": 5, "6♦️": 6, "7♦️": 7, "8♦️": 8, "9♦️": 9, "10♦️": 10, "J♦️": 10, "Q♦️": 10, "K♦️": 10}
     player_hand = []
     dealer_hand = []
     player_score = 0
@@ -121,7 +120,7 @@ async def blackjack(ctx):
     b_view.add_item(b_button_stand)
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
 
-    async def hit(interaction: discord.Interaction):
+    async def hit():
         nonlocal player_score
         nonlocal player_hand
         cards = random.choice(list(deck.keys()))
@@ -141,14 +140,14 @@ async def blackjack(ctx):
             return
         b_button_hit.callback = hit
 
-    async def stand(interaction: discord.Interaction):
+    async def stand():
         nonlocal dealer_score
         nonlocal dealer_hand
         while dealer_score < 17:
-            card = random.choice(list(deck.keys()))
-            dealer_hand.append(card)
-            dealer_score += deck[card]
-            del deck[card]
+            cards = random.choice(list(deck.keys()))
+            dealer_hand.append(cards)
+            dealer_score += deck[cards]
+            del deck[cards]
         b_embed.set_field_at(2, name="Dealer's hand", value=f"{', '.join(dealer_hand)}", inline=False)
         b_embed.set_field_at(3, name="Dealer's score", value=dealer_score, inline=False)
         await b_msg.edit(embed=b_embed)
@@ -220,7 +219,7 @@ async def bombe(ctx, user: discord.Member = None):
 
     wrong_cable = random.choice(["red", "blue", "green"])
 
-    async def defuse_red(interaction: discord.Interaction):
+    async def defuse_red():
         if wrong_cable == "red":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
@@ -242,7 +241,7 @@ async def bombe(ctx, user: discord.Member = None):
         await b_msg.edit(embed=b_embed, view=None)
         return
 
-    async def defuse_blue(interaction: discord.Interaction):
+    async def defuse_blue():
         if wrong_cable == "blue":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
@@ -264,7 +263,7 @@ async def bombe(ctx, user: discord.Member = None):
         await b_msg.edit(embed=b_embed, view=None)
         return
 
-    async def defuse_green(interaction: discord.Interaction):
+    async def defuse_green():
         if wrong_cable == "green":
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
