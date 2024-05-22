@@ -4,12 +4,14 @@ import discord
 import time
 import random
 import datetime
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
 default_intents = discord.Intents.all()
-bot = discord.Bot(intends=default_intents)
+default_intents.members = True
+bot = discord.Bot(intents=default_intents)
 
 TOKEN = os.getenv('TOKEN')
 OWNER = os.getenv('OWNER')
@@ -32,6 +34,48 @@ async def on_ready():
 @bot.event
 async def on_connect():
     print("Bot connected to discord")
+
+
+@bot.event
+async def on_disconnect():
+    print("Bot disconnected from discord")
+
+
+@bot.listen()
+async def on_ready():
+    if not os.path.exists('./roles'):
+        os.makedirs('./roles')
+    for guild in bot.guilds:
+        members = guild.fetch_members()
+        if members is None:
+            print(f"Failed to fetch members in {guild.name}")
+            continue
+        guild_roles = {}
+        while True:
+            try:
+                member = await members.__anext__()
+                member_roles = [role.id for role in member.roles if role.name != "@everyone"]
+                guild_roles[member.id] = member_roles
+            except StopAsyncIteration:
+                break
+        file_path = f'./roles/{guild.id}_roles.json'
+        with open(file_path, 'w') as f:
+            json.dump(guild_roles, f, indent=4)
+        print(f"Roles for guild {guild.name} have been saved to {file_path}")
+
+
+@bot.listen()
+async def on_member_join(member):
+    file_path = f'./roles/{member.guild.id}_roles.json'
+    if not os.path.exists(file_path):
+        return
+    with open(file_path, 'r') as f:
+        guild_roles = json.load(f)
+    if str(member.id) not in guild_roles:
+        return
+    roles = [member.guild.get_role(role_id) for role_id in guild_roles[str(member.id)]]
+    await member.add_roles(*roles)
+    print(f"Roles have been added to {member.name} in {member.guild.name}")
 
 
 ## Commands
@@ -200,6 +244,7 @@ async def bombe(ctx, user: discord.Member = None):
     invite = await ctx.channel.create_invite()
 
     async def explode_by_timeout():
+        b_embed.title = "The bomb has exploded!"
         b_embed.description = "Times up! The bomb has exploded!"
         b_embed.colour = 0xff0000
         b_embed.remove_footer()
@@ -219,8 +264,9 @@ async def bombe(ctx, user: discord.Member = None):
 
     wrong_cable = random.choice(["red", "blue", "green"])
 
-    async def defuse_red():
+    async def defuse_red(interaction):
         if wrong_cable == "red":
+            b_embed.title = "The bomb has exploded!"
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
             b_embed.remove_footer()
@@ -235,14 +281,16 @@ async def bombe(ctx, user: discord.Member = None):
                 if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
+        b_embed.title = "The bomb has been defused!"
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
         b_embed.colour = 0x00ff00
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         return
 
-    async def defuse_blue():
+    async def defuse_blue(interaction):
         if wrong_cable == "blue":
+            b_embed.title = "The bomb has exploded!"
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
             b_embed.remove_footer()
@@ -257,14 +305,16 @@ async def bombe(ctx, user: discord.Member = None):
                 if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
+        b_embed.title = "The bomb has been defused!"
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
         b_embed.colour = 0x00ff00
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
         return
 
-    async def defuse_green():
+    async def defuse_green(interaction):
         if wrong_cable == "green":
+            b_embed.title = "The bomb has exploded!"
             b_embed.description = "You chose the wrong cable! The bomb has exploded!"
             b_embed.colour = 0xff0000
             b_embed.remove_footer()
@@ -279,6 +329,7 @@ async def bombe(ctx, user: discord.Member = None):
                 if "Missing Permissions" in str(e):
                     await b_msg.respond("*I don't have permission to kick this user!*")
             return
+        b_embed.title = "The bomb has been defused!"
         b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
         b_embed.colour = 0x00ff00
         b_embed.remove_footer()

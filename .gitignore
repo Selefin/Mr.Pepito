@@ -164,3 +164,6 @@ cython_debug/
 /.idea/Mr.Pepito.iml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
+
+# roles directory
+roles/
