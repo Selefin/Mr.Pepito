@@ -29,3 +29,6 @@ python bot.py
 - **`/blackjack`:** Play a hand of blackjack
 - **`/bomb`:** Plant a bomb for a user to defuse
 - **`/clear`:** Clear a specified number of messages
+
+## Other Features
+- **Role saving and loading:** Saves roles of users when the bot starts in case someone leaves the server.
