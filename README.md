@@ -49,4 +49,3 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
     ```
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for more information.
-```
