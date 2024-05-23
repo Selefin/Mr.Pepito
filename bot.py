@@ -350,8 +350,7 @@ async def clear(ctx, amount: int = None):
                     f"Clearing all messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
                 msg = await ctx.respond("Clearing all messages...", ephemeral=True)
                 await ctx.channel.purge()
-                await msg.edit(content="Cleared all messages", ephemeral=True)
-                await msg.delete(delay=5)
+                await msg.edit(content="Cleared all messages")
                 print("Cleared all messages")
             except Exception as e:
                 print(f"Failed to clear messages: {e}")
@@ -361,7 +360,7 @@ async def clear(ctx, amount: int = None):
                 f"Clearing {amount} messages in {ctx.guild.name} ({ctx.guild.id}) in channel {ctx.channel.name} ({ctx.channel.id})")
             msg = await ctx.respond(f"Clearing {amount} messages...", ephemeral=True)
             await ctx.channel.purge(limit=amount)
-            await msg.respond(f"Cleared {amount} messages", ephemeral=True)
+            await msg.respond(f"Cleared {amount} messages")
             print(f"Cleared {amount} messages")
     else:
         await ctx.respond("You do not have permission to use this command")
