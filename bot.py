@@ -164,7 +164,7 @@ async def blackjack(ctx):
     b_view.add_item(b_button_stand)
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
 
-    async def hit():
+    async def hit(interaction):
         nonlocal player_score
         nonlocal player_hand
         cards = random.choice(list(deck.keys()))
@@ -184,7 +184,7 @@ async def blackjack(ctx):
             return
         b_button_hit.callback = hit
 
-    async def stand():
+    async def stand(interaction):
         nonlocal dealer_score
         nonlocal dealer_hand
         while dealer_score < 17:
