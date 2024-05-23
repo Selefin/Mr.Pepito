@@ -41,11 +41,6 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
     ```bash
     python bot.py
     ```
-   
-5. **Invite the bot to your server:**
-    Use the following link to invite the bot to your server:
-    ```
-    https://discord.com/oauth2/authorize?client_id=1217878252396482621&permissions=8&scope=bot
-    ```
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for more information.
