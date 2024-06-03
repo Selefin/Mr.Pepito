@@ -30,14 +30,22 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
    pip install -r requirements.txt
    ```
    
-3. **Create a `.env` file:**
+3. **Create a Discord bot:**
+    - Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new application.
+    - Go to the "Bot" tab and click "Add Bot".
+    - Copy the bot token and save it for later.
+    - Go to the "OAuth2" tab and select the "bot" scope.
+    - The bot requires the Administrator permission to function properly.
+    - Copy the OAuth2 URL and paste it into your browser to add the bot to your server.
+   
+4. **Create a `.env` file:**
     Create a `.env` file in the root directory of the project and add the following environment variables:
     ```env
     TOKEN=YOUR_DISCORD_BOT_TOKEN_HERE
     OWNER_ID=YOUR_DISCORD_USER_ID_HERE
     ```
    
-4. **Run the bot:**
+5. **Run the bot:**
     ```bash
     python bot.py
     ```
