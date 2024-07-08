@@ -1,11 +1,15 @@
 # Mr.Pepito - A discord bot
-import os
-import discord
-import time
-import random
+import asyncio
 import datetime
 import json
+import os
+import random
+import re
+import time
+import urllib.request
+import discord
 from dotenv import load_dotenv
+import yt_dlp as youtube_dl
 
 load_dotenv()
 
@@ -104,6 +108,7 @@ async def disconnect(ctx):
     await ctx.respond("Disconnecting...")
     print("Disconnecting...")
     await bot.close()
+    exit(0)
 
 
 @bot.slash_command(name="roulette", description="Play a game of russian roulette")
@@ -136,10 +141,14 @@ async def roulette(ctx):
 
 @bot.slash_command(name="blackjack", description="Play a hand of blackjack")
 async def blackjack(ctx):
-    deck = {"A♠️": 11, "2♠️": 2, "3♠️": 3, "4♠️": 4, "5♠️": 5, "6♠️": 6, "7♠️": 7, "8♠️": 8, "9♠️": 9, "10♠️": 10, "J♠️": 10, "Q♠️": 10, "K♠️": 10,
-            "A♣️": 11, "2♣️": 2, "3♣️": 3, "4♣️": 4, "5♣️": 5, "6♣️": 6, "7♣️": 7, "8♣️": 8, "9♣️": 9, "10♣️": 10, "J♣️": 10, "Q♣️": 10, "K♣️": 10,
-            "A♥️": 11, "2♥️": 2, "3♥️": 3, "4♥️": 4, "5♥️": 5, "6♥️": 6, "7♥️": 7, "8♥️": 8, "9♥️": 9, "10♥️": 10, "J♥️": 10, "Q♥️": 10, "K♥️": 10,
-            "A♦️": 11, "2♦️": 2, "3♦️": 3, "4♦️": 4, "5♦️": 5, "6♦️": 6, "7♦️": 7, "8♦️": 8, "9♦️": 9, "10♦️": 10, "J♦️": 10, "Q♦️": 10, "K♦️": 10}
+    deck = {"A♠️": 11, "2♠️": 2, "3♠️": 3, "4♠️": 4, "5♠️": 5, "6♠️": 6, "7♠️": 7, "8♠️": 8, "9♠️": 9, "10♠️": 10,
+            "J♠️": 10, "Q♠️": 10, "K♠️": 10,
+            "A♣️": 11, "2♣️": 2, "3♣️": 3, "4♣️": 4, "5♣️": 5, "6♣️": 6, "7♣️": 7, "8♣️": 8, "9♣️": 9, "10♣️": 10,
+            "J♣️": 10, "Q♣️": 10, "K♣️": 10,
+            "A♥️": 11, "2♥️": 2, "3♥️": 3, "4♥️": 4, "5♥️": 5, "6♥️": 6, "7♥️": 7, "8♥️": 8, "9♥️": 9, "10♥️": 10,
+            "J♥️": 10, "Q♥️": 10, "K♥️": 10,
+            "A♦️": 11, "2♦️": 2, "3♦️": 3, "4♦️": 4, "5♦️": 5, "6♦️": 6, "7♦️": 7, "8♦️": 8, "9♦️": 9, "10♦️": 10,
+            "J♦️": 10, "Q♦️": 10, "K♦️": 10}
     player_hand = []
     dealer_hand = []
     player_score = 0
@@ -323,6 +332,99 @@ async def clear(ctx, amount: int = None):
             print(f"Cleared {amount} messages")
     else:
         await ctx.respond("You do not have permission to use this command")
+
+
+@bot.slash_command(name="play", description="Play a song from youtube")
+async def play(ctx, request: str):
+    if ctx.author.voice is None:
+        await ctx.respond("You are not in a voice channel")
+        return
+
+    voice_channel = ctx.author.voice.channel
+
+    if bot.voice_clients:
+        for vc in bot.voice_clients:
+            if vc.channel != voice_channel:
+                await vc.disconnect(force=False)
+            else:
+                break
+    await voice_channel.connect()
+
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+
+    if " " in request:
+        request = request.replace(" ", "+")
+    request = request.encode('ascii', 'ignore').decode('ascii')
+    query_url = f"https://www.youtube.com/results?search_query={request}"
+    html = urllib.request.urlopen(query_url)
+    video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+
+    if not video_ids:
+        await ctx.response.send_message("No video found.")
+        return
+
+    await ctx.defer()
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'quiet': False,
+        'verbose': True,
+    }
+
+    video_url = f"https://www.youtube.com/watch?v={video_ids[0]}"
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(video_url, download=False)
+        formats = info.get('formats', None)
+
+        if not formats:
+            await ctx.followup.send("No valid audio stream found.")
+            return
+
+        audio_format = next((f for f in formats if f.get('acodec') != 'none'), None)
+        if not audio_format:
+            await ctx.followup.send("No valid audio stream found.")
+            return
+
+        url = audio_format['url']
+        title = info['title']
+
+    ffmpeg_options = {
+        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+        'options': '-vn',
+    }
+
+    if voice_client.is_playing():
+        voice_client.stop()
+
+    try:
+        voice_client.play(discord.FFmpegPCMAudio(url, **ffmpeg_options))
+    except Exception as e:
+        print(f"Error playing audio: {e}")
+        await ctx.followup.send(f"Error playing audio: {e}")
+        return
+
+    await ctx.followup.send(f"Playing {title}\n {video_url}")
+
+    while voice_client.is_playing():
+        await asyncio.sleep(1)
+    await voice_client.disconnect(force=True)
+
+
+@bot.slash_command(name="stop", description="Stop the current song")
+async def stop(ctx):
+    voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice_client is None:
+        await ctx.respond("I am not in a voice channel")
+        return
+
+    if voice_client.is_playing():
+        voice_client.stop()
+        await voice_client.disconnect(force=True)
+        await ctx.respond("Stopped the current song")
+    else:
+        await ctx.respond("No song is currently playing")
+        if voice_client.is_connected():
+            await voice_client.disconnect(force=True)
 
 
 bot.run(TOKEN)
