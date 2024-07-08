@@ -14,6 +14,8 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
 - **`/blackjack`:** Play a hand of blackjack
 - **`/bomb`:** Plant a bomb for a user to defuse
 - **`/clear`:** Clear a specified number of messages
+- **`/play` :** Play music in a voice channel
+- **`/stop` :** Stop the music
 
 ### Other Features
 **Roles Management:** Automatically assigns roles to new members based on their previous roles.
@@ -40,6 +42,7 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
    
 4. **Create a `.env` file:**
     Create a `.env` file in the root directory of the project and add the following environment variables:
+    Use the token of the application you created in the previous step and your Discord user ID.
     ```env
     TOKEN=YOUR_DISCORD_BOT_TOKEN_HERE
     OWNER_ID=YOUR_DISCORD_USER_ID_HERE
