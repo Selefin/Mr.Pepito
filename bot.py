@@ -16,6 +16,9 @@ bot = discord.Bot(intents=default_intents)
 TOKEN = os.getenv('TOKEN')
 OWNER = os.getenv('OWNER')
 
+perm_missing = "Missing Permissions"
+perm_kick_missing = "*I don't have permission to kick this user!*"
+
 
 ## Events
 @bot.event
@@ -121,7 +124,7 @@ async def roulette(ctx):
             await ctx.author.timeout_for(duration=r_duration, reason="You died in russian roulette")
         except Exception as e:
             print(f"Failed to timeout user: {e}")
-            if "Missing Permissions" in str(e):
+            if perm_missing in str(e):
                 await r_msg.respond("*I don't have permission to timeout this user!*")
     else:
         r_embed.description = "**CLICK!** \nYou survived!"
@@ -141,21 +144,23 @@ async def blackjack(ctx):
     dealer_hand = []
     player_score = 0
     dealer_score = 0
-    for i in range(2):
+    for _ in range(2):
         card = random.choice(list(deck.keys()))
         player_hand.append(card)
         player_score += deck[card]
         del deck[card]
-    for i in range(2):
+    for _ in range(2):
         card = random.choice(list(deck.keys()))
         dealer_hand.append(card)
         dealer_score += deck[card]
         del deck[card]
+    d_hand = "Dealer's hand"
+    d_score = "Dealer's score"
     b_embed = discord.Embed(title="Blackjack", description="You have been dealt two cards", color=0x0000ff)
     b_embed.add_field(name="Your hand", value=f"{player_hand[0]} and {player_hand[1]}", inline=False)
     b_embed.add_field(name="Your score", value=str(player_score), inline=False)
-    b_embed.add_field(name="Dealer's hand", value=f"{dealer_hand[0]}", inline=False)
-    b_embed.add_field(name="Dealer's score", value="?", inline=False)
+    b_embed.add_field(name=d_hand, value=f"{dealer_hand[0]}", inline=False)
+    b_embed.add_field(name=d_score, value="?", inline=False)
     b_embed.set_footer(text="Type /hit or /stand")
     b_view = discord.ui.View()
     b_button_hit = discord.ui.Button(label="Hit", style=discord.ButtonStyle.success)
@@ -176,8 +181,8 @@ async def blackjack(ctx):
         await b_msg.edit(embed=b_embed, view=b_view)
         if player_score > 21:
             b_embed.description = "You have gone bust!"
-            b_embed.set_field_at(2, name="Dealer's hand", value=f"{', '.join(dealer_hand)}", inline=False)
-            b_embed.set_field_at(3, name="Dealer's score", value=dealer_score, inline=False)
+            b_embed.set_field_at(2, name=d_hand, value=f"{', '.join(dealer_hand)}", inline=False)
+            b_embed.set_field_at(3, name=d_score, value=dealer_score, inline=False)
             b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
@@ -192,8 +197,8 @@ async def blackjack(ctx):
             dealer_hand.append(cards)
             dealer_score += deck[cards]
             del deck[cards]
-        b_embed.set_field_at(2, name="Dealer's hand", value=f"{', '.join(dealer_hand)}", inline=False)
-        b_embed.set_field_at(3, name="Dealer's score", value=dealer_score, inline=False)
+        b_embed.set_field_at(2, name=d_hand, value=f"{', '.join(dealer_hand)}", inline=False)
+        b_embed.set_field_at(3, name=d_score, value=dealer_score, inline=False)
         await b_msg.edit(embed=b_embed)
         if dealer_score > 21:
             b_embed.description = "The dealer has gone bust!"
@@ -218,20 +223,26 @@ async def blackjack(ctx):
             b_embed.colour = 0xffff00
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
-            return
 
     b_button_hit.callback = hit
     b_button_stand.callback = stand
 
 
-@bot.slash_command(name="bomb", description="Plant a bot for a user to defuse")
-async def bombe(ctx, user: discord.Member = None):
+@bot.slash_command(name="bomb", description="Plant a bot for a target to defuse")
+async def bomb(ctx, user: discord.Member = None):
     if user is None:
         user = ctx.author
-    b_embed = discord.Embed(title="A bomb has been planted",
-                            description=f"A bomb is planted on {user.mention}. You have 5 minutes to defuse the bomb!\nIf you chose the wrong cable you may explode.",
-                            color=0x0000ff)
-    b_embed.set_footer(text="click the button to defuse the bomb")
+
+    def create_bomb_embed(target):
+        embed = discord.Embed(
+            title="A bomb has been planted",
+            description=f"A bomb is planted on {target.mention}. You have 5 minutes to defuse the bomb!\nIf you choose the wrong cable, you may explode.",
+            color=0x0000ff
+        )
+        embed.set_footer(text="Click the button to defuse the bomb")
+        return embed
+
+    b_embed = create_bomb_embed(user)
     b_view = discord.ui.View()
     b_button_red = discord.ui.Button(label="red", style=discord.ButtonStyle.danger)
     b_button_blue = discord.ui.Button(label="blue", style=discord.ButtonStyle.primary)
@@ -243,102 +254,50 @@ async def bombe(ctx, user: discord.Member = None):
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
     invite = await ctx.channel.create_invite()
 
+    bomb_exploded = "The bomb has exploded!"
+    bomb_defused = "The bomb has been defused!"
+    cable_boom = "You chose the wrong cable! The bomb has exploded!"
+
+    async def kick_user(target, reason, invite_url):
+        try:
+            await target.create_dm()
+            await target.dm_channel.send(
+                f"The blast expelled you from the server.\nHere's a link to join it: {invite_url}")
+            await target.kick(reason=reason)
+        except Exception as e:
+            print(f"Failed to kick target: {e}")
+            if perm_missing in str(e).lower():
+                await b_msg.respond("I don't have permission to kick users.")
+
     async def explode_by_timeout():
-        b_embed.title = "The bomb has exploded!"
-        b_embed.description = "Times up! The bomb has exploded!"
+        b_embed.title = bomb_exploded
+        b_embed.description = "Time's up! The bomb has exploded!"
         b_embed.colour = 0xff0000
         b_embed.remove_footer()
         await b_msg.edit(embed=b_embed, view=None)
-        try:
-            await user.create_dm()
-            await user.dm_channel.send(
-                f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
-            await user.kick(reason="The bomb exploded")
-        except Exception as e:
-            print(f"Failed to kick user: {e}")
-            if "Missing Permissions" in str(e):
-                await b_msg.respond("*I don't have permission to kick this user!*")
-        return
+        await kick_user(user, bomb_exploded, invite.url)
 
     b_view.on_timeout = explode_by_timeout
-
     wrong_cable = random.choice(["red", "blue", "green"])
 
-    async def defuse_red(interaction):
-        if wrong_cable == "red":
-            b_embed.title = "The bomb has exploded!"
-            b_embed.description = "You chose the wrong cable! The bomb has exploded!"
+    async def defuse_bomb(color):
+        if wrong_cable == color:
+            b_embed.title = bomb_exploded
+            b_embed.description = cable_boom
             b_embed.colour = 0xff0000
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
-            try:
-                await user.create_dm()
-                await user.dm_channel.send(
-                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
-                await user.kick(reason="The bomb exploded")
-            except Exception as e:
-                print(f"Failed to kick user: {e}")
-                if "Missing Permissions" in str(e):
-                    await b_msg.respond("*I don't have permission to kick this user!*")
-            return
-        b_embed.title = "The bomb has been defused!"
-        b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.colour = 0x00ff00
-        b_embed.remove_footer()
-        await b_msg.edit(embed=b_embed, view=None)
-        return
-
-    async def defuse_blue(interaction):
-        if wrong_cable == "blue":
-            b_embed.title = "The bomb has exploded!"
-            b_embed.description = "You chose the wrong cable! The bomb has exploded!"
-            b_embed.colour = 0xff0000
+            await kick_user(user, bomb_exploded, invite.url)
+        else:
+            b_embed.title = bomb_defused
+            b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
+            b_embed.colour = 0x00ff00
             b_embed.remove_footer()
             await b_msg.edit(embed=b_embed, view=None)
-            try:
-                await user.create_dm()
-                await user.dm_channel.send(
-                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
-                await user.kick(reason="The bomb exploded")
-            except Exception as e:
-                print(f"Failed to kick user: {e}")
-                if "Missing Permissions" in str(e):
-                    await b_msg.respond("*I don't have permission to kick this user!*")
-            return
-        b_embed.title = "The bomb has been defused!"
-        b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.colour = 0x00ff00
-        b_embed.remove_footer()
-        await b_msg.edit(embed=b_embed, view=None)
-        return
 
-    async def defuse_green(interaction):
-        if wrong_cable == "green":
-            b_embed.title = "The bomb has exploded!"
-            b_embed.description = "You chose the wrong cable! The bomb has exploded!"
-            b_embed.colour = 0xff0000
-            b_embed.remove_footer()
-            await b_msg.edit(embed=b_embed, view=None)
-            try:
-                await user.create_dm()
-                await user.dm_channel.send(
-                    f"The blast expelled you from the server.\nHere's a link to join it: {invite.url}")
-                await user.kick(reason="The bomb exploded")
-            except Exception as e:
-                print(f"Failed to kick user: {e}")
-                if "Missing Permissions" in str(e):
-                    await b_msg.respond("*I don't have permission to kick this user!*")
-            return
-        b_embed.title = "The bomb has been defused!"
-        b_embed.description = f"You defused the bomb! The wrong cable was {wrong_cable}."
-        b_embed.colour = 0x00ff00
-        b_embed.remove_footer()
-        await b_msg.edit(embed=b_embed, view=None)
-        return
-
-    b_button_red.callback = defuse_red
-    b_button_blue.callback = defuse_blue
-    b_button_green.callback = defuse_green
+    b_button_red.callback = lambda interaction: defuse_bomb("red")
+    b_button_blue.callback = lambda interaction: defuse_bomb("blue")
+    b_button_green.callback = lambda interaction: defuse_bomb("green")
 
 
 @bot.slash_command(name="clear", description="Clear a specified number of messages")
