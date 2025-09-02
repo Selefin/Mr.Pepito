@@ -12,11 +12,12 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
 
 - **`/commands`:** List all available commands
 - **`/ping`:** Check the bot's latency
-- **`/disconnect`:** Disconnect the bot from Discord
+- **`/restart`:** Restart the bot (owner only)
+- **`/disconnect`:** Disconnect the bot from Discord (owner only)
 - **`/roulette`:** Play a game of Russian roulette
 - **`/blackjack`:** Play a hand of blackjack
 - **`/bomb`:** Plant a bomb for a user to defuse
-- **`/clear`:** Clear a specified number of messages
+- **`/clear`:** Clear a specified number of messages (admin only)
 - **`/play` :** Play music in a voice channel
 - **`/stop` :** Stop the music
 
@@ -29,7 +30,7 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/makesse24/Mr.Pepito.git
+   git clone https://github.com/Selefin/Mr.Pepito.git
    cd Mr.Pepito
    ```
 

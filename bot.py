@@ -5,6 +5,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 import urllib.request
 import discord
@@ -110,6 +111,15 @@ async def disconnect(ctx):
     await bot.close()
     exit(0)
 
+@bot.slash_command(name="restart", description="Restart the bot")
+async def restart(ctx):
+    if ctx.author.id != int(OWNER):
+        await ctx.respond("You do not have permission to use this command")
+        return
+    await ctx.respond("Restarting...")
+    print("Restarting...")
+    os.execv(sys.executable, ['python'] + sys.argv)
+
 
 @bot.slash_command(name="roulette", description="Play a game of russian roulette")
 async def roulette(ctx):
@@ -153,21 +163,36 @@ async def blackjack(ctx):
     dealer_hand = []
     player_score = 0
     dealer_score = 0
+    player_aces = 0
+    dealer_aces = 0
     for _ in range(2):
         card = random.choice(list(deck.keys()))
         player_hand.append(card)
+        if card[0] == "A":
+            player_aces += 1
         player_score += deck[card]
+        if player_score > 21 and player_aces:
+            player_score -= 10
+            player_aces -= 1
         del deck[card]
     for _ in range(2):
         card = random.choice(list(deck.keys()))
         dealer_hand.append(card)
+        if card[0] == "A":
+            dealer_aces += 1
         dealer_score += deck[card]
+        if dealer_score > 21 and dealer_aces:
+            dealer_score -= 10
+            dealer_aces -= 1
         del deck[card]
     d_hand = "Dealer's hand"
     d_score = "Dealer's score"
     b_embed = discord.Embed(title="Blackjack", description="You have been dealt two cards", color=0x0000ff)
-    b_embed.add_field(name="Your hand", value=f"{player_hand[0]} and {player_hand[1]}", inline=False)
-    b_embed.add_field(name="Your score", value=str(player_score), inline=False)
+    b_embed.add_field(name="Your hand", value=f"{player_hand[0]} {player_hand[1]}", inline=False)
+    score_text = str(player_score)
+    if any(card[0] == "A" for card in player_hand) and player_score <= 21 and player_aces > 0:
+        score_text += " (Soft)"
+    b_embed.add_field(name="Your score", value=score_text, inline=False)
     b_embed.add_field(name=d_hand, value=f"{dealer_hand[0]}", inline=False)
     b_embed.add_field(name=d_score, value="?", inline=False)
     b_embed.set_footer(text="Type /hit or /stand")
@@ -179,14 +204,24 @@ async def blackjack(ctx):
     b_msg = await ctx.respond(embed=b_embed, view=b_view)
 
     async def hit(interaction):
+        await interaction.response.defer()
         nonlocal player_score
         nonlocal player_hand
+        nonlocal player_aces
         cards = random.choice(list(deck.keys()))
         player_hand.append(cards)
         player_score += deck[cards]
+        if cards[0] == "A":
+            player_aces += 1
+        if player_score > 21 and player_aces:
+            player_score -= 10
+            player_aces -= 1
         del deck[cards]
         b_embed.set_field_at(0, name="Your hand", value=f"{', '.join(player_hand)}", inline=False)
-        b_embed.set_field_at(1, name="Your score", value=player_score, inline=False)
+        score_text = str(player_score)
+        if any(card[0] == "A" for card in player_hand) and player_score <= 21 and player_aces > 0:
+            score_text += " (Soft)"
+        b_embed.set_field_at(1, name="Your score", value=score_text, inline=False)
         await b_msg.edit(embed=b_embed, view=b_view)
         if player_score > 21:
             b_embed.description = "You have gone bust!"
@@ -199,12 +234,19 @@ async def blackjack(ctx):
         b_button_hit.callback = hit
 
     async def stand(interaction):
+        await interaction.response.defer()
+        nonlocal dealer_aces
         nonlocal dealer_score
         nonlocal dealer_hand
         while dealer_score < 17:
             cards = random.choice(list(deck.keys()))
             dealer_hand.append(cards)
             dealer_score += deck[cards]
+            if cards[0] == "A":
+                dealer_aces += 1
+            if dealer_score > 21 and dealer_aces:
+                dealer_score -= 10
+                dealer_aces -= 1
             del deck[cards]
         b_embed.set_field_at(2, name=d_hand, value=f"{', '.join(dealer_hand)}", inline=False)
         b_embed.set_field_at(3, name=d_score, value=dealer_score, inline=False)
@@ -334,7 +376,8 @@ async def clear(ctx, amount: int = None):
         await ctx.respond("You do not have permission to use this command")
 
 
-@bot.slash_command(name="play", description="Play a song from youtube")
+# TODO : Check connection from a voice channel to another
+@bot.slash_command(name="play", description="Play a song from YouTube Music")
 async def play(ctx, request: str):
     if ctx.author.voice is None:
         await ctx.respond("You are not in a voice channel")
@@ -348,14 +391,15 @@ async def play(ctx, request: str):
                 await vc.disconnect(force=False)
             else:
                 break
-    await voice_channel.connect()
+    if not voice_client or not voice_client.is_connected():
+        await voice_channel.connect()
 
     voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
 
     if " " in request:
         request = request.replace(" ", "+")
     request = request.encode('ascii', 'ignore').decode('ascii')
-    query_url = f"https://www.youtube.com/results?search_query={request}"
+    query_url = f"https://music.youtube.com/search?q={request}"
     html = urllib.request.urlopen(query_url)
     video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
 
@@ -371,7 +415,7 @@ async def play(ctx, request: str):
         'verbose': True,
     }
 
-    video_url = f"https://www.youtube.com/watch?v={video_ids[0]}"
+    video_url = f"https://music.youtube.com/watch?v={video_ids[0]}"
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(video_url, download=False)
         formats = info.get('formats', None)
