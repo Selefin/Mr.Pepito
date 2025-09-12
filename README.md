@@ -34,13 +34,20 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
    cd Mr.Pepito
    ```
 
-2. **Install dependencies:**
+2. **Create a virtual environment (optional but recommended):**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+3. **Install dependencies:**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Create a Discord bot:**
+4. **Create a Discord bot:**
     - Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new application.
     - Go to the "Bot" tab and click "Add Bot".
     - Copy the bot token and save it for later.
@@ -48,7 +55,7 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
     - The bot requires the Administrator permission to function properly.
     - Copy the OAuth2 URL and paste it into your browser to add the bot to your server.
 
-4. **Create a `.env` file:**
+5. **Create a `.env` file:**
     Create a `.env` file in the root directory of the project and add the following environment variables:
     Use the token of the application you created in the previous step and your Discord user ID.
 
