@@ -48,21 +48,6 @@ async def on_connect():
 async def on_disconnect():
     print("Bot disconnected from discord")
 
-
-@bot.listen()
-async def on_member_join(member):
-    file_path = f'./roles/{member.guild.id}_roles.json'
-    if not os.path.exists(file_path):
-        return
-    with open(file_path, 'r') as f:
-        guild_roles = json.load(f)
-    if str(member.id) not in guild_roles:
-        return
-    roles = [member.guild.get_role(role_id) for role_id in guild_roles[str(member.id)]]
-    await member.add_roles(*roles)
-    print(f"Roles have been added to {member.name} in {member.guild.name}")
-
-
 ## Commands
 @bot.slash_command(name="commands", description="List all available commands")
 async def commands(ctx):
