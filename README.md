@@ -10,20 +10,24 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
 
 ### Commands
 
-- **`/commands`:** List all available commands
-- **`/ping`:** Check the bot's latency
-- **`/restart`:** Restart the bot (owner only)
-- **`/disconnect`:** Disconnect the bot from Discord (owner only)
+#### Minigames
+
 - **`/roulette`:** Play a game of Russian roulette
 - **`/blackjack`:** Play a hand of blackjack
 - **`/bomb`:** Plant a bomb for a user to defuse
-- **`/clear`:** Clear a specified number of messages (admin only)
+
+#### Music
+
 - **`/play` :** Play music in a voice channel
 - **`/stop` :** Stop the music
 
-### Other Features
+#### Utility
 
-**Roles Management:** Automatically assigns roles to new members based on their previous roles.
+- **`/commands`:** List all available commands
+- **`/ping`:** Check the bot's latency
+- **`/clear`:** Clear a specified number of messages *(admin only)*
+- **`/restart`:** Restart the bot *(owner only)*
+- **`/disconnect`:** Disconnect the bot from Discord *(owner only)*
 
 ## Installation
 
@@ -36,10 +40,24 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
 
 2. **Create a virtual environment (optional but recommended):**
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+    Open a terminal in the project directory and run:
+
+    ```bash
+    python -m venv venv
+    ```
+
+    Activate the virtual environment:
+    - On Windows:
+
+        ```bash
+        venv\Scripts\activate
+        ```
+
+    - On macOS/Linux:
+
+        ```bash
+        source venv/bin/activate
+        ```
 
 3. **Install dependencies:**
 
@@ -56,15 +74,17 @@ Mr. Pepito is a multifunctional Discord bot designed to enhance your server expe
     - Copy the OAuth2 URL and paste it into your browser to add the bot to your server.
 
 5. **Create a `.env` file:**
+
     Create a `.env` file in the root directory of the project and add the following environment variables:
-    Use the token of the application you created in the previous step and your Discord user ID.
 
     ```env
-    TOKEN=YOUR_DISCORD_BOT_TOKEN_HERE
-    OWNER_ID=YOUR_DISCORD_USER_ID_HERE
+    TOKEN=DISCORD_BOT_TOKEN
+    OWNER_ID=DISCORD_USER_ID
     ```
 
-5. **Run the bot:**
+    Use the token of the application you created in the previous step and your Discord user ID.
+
+6. **Run the bot:**
 
     ```bash
     python bot.py
