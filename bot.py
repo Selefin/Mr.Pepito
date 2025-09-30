@@ -62,6 +62,27 @@ async def on_member_join(member):
     await member.add_roles(*roles)
     print(f"Roles have been added to {member.name} in {member.guild.name}")
 
+@bot.listen()
+async def on_ready():
+    if not os.path.exists('./roles'):
+        os.makedirs('./roles')
+    for guild in bot.guilds:
+        members = guild.fetch_members()
+        if members is None:
+            print(f"Failed to fetch members in {guild.name}")
+            continue
+        guild_roles = {}
+        while True:
+            try:
+                member = await members.__anext__()
+                member_roles = [role.id for role in member.roles if role.name != "@everyone"]
+                guild_roles[member.id] = member_roles
+            except StopAsyncIteration:
+                break
+        file_path = f'./roles/{guild.id}_roles.json'
+        with open(file_path, 'w') as f:
+            json.dump(guild_roles, f, indent=4)
+        print(f"Roles for guild {guild.name} have been saved to {file_path}")
 
 ## Commands
 @bot.slash_command(name="commands", description="List all available commands")
