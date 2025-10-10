@@ -46,6 +46,9 @@ async def on_connect():
 
 @bot.event
 async def on_disconnect():
+    print("Closing HTTP session...")
+    if hasattr(bot, 'http') and hasattr(bot.http, '_HTTPClient__session'):
+            await bot.http._HTTPClient__session.close()
     print("Bot disconnected from discord")
 
 ## Commands
@@ -70,8 +73,17 @@ async def disconnect(ctx):
         return
     await ctx.respond("Disconnecting...")
     print("Disconnecting...")
-    await bot.close()
-    exit(0)
+    
+    try:
+        for voice_client in bot.voice_clients:
+            if voice_client.is_connected():
+                await voice_client.disconnect(force=True)
+
+        await bot.close()
+        print("Bot disconnected successfully.")
+    except Exception as e:
+        print(f"Error during disconnect: {e}")
+    sys.exit(0)
 
 @bot.slash_command(name="restart", description="Restart the bot")
 async def restart(ctx):
