@@ -18,7 +18,7 @@ default_intents = discord.Intents.all()
 default_intents.members = True
 bot = discord.Bot(intents=default_intents)
 
-TOKEN = os.getenv('TOKEN')
+TOKEN = os.getenv('TOKEN_TEST_BOT')
 OWNER = os.getenv('OWNER')
 
 perm_missing = "Missing Permissions"
