@@ -1,0 +1,7 @@
+services:
+  bot:
+    build: .
+    container_name: Mr.Pepito
+    env_file: .env
+    working_dir: /app
+    command: ["python", "bot.py"]
